@@ -47,6 +47,11 @@ int main(int argc, char* argv[])
 
 	char* end_wire = argv[2];
 
+	// wires array represents a two-letter wire name
+	// [x][0] represents a single-letter name
+	// [0][0] is unused
+	// [x][y][0] holds the wire's signal, while 
+	// [x][y][1] is 1 if set, else 0
 	unsigned short wires[27][27][2];
 	memset(&wires, 0, 27 * 27 * 2 * sizeof(unsigned short));
 
@@ -58,18 +63,17 @@ int main(int argc, char* argv[])
 	VALUE_PASS i_o;
 	unsigned short in_num;
 	int unset = 1;
-	int iterations;
 	
 	while (unset != 0)
 	{
 		unset = 0;
 		fseek (input, 0, SEEK_SET);
-		printf("Iterations: %d\n", ++iterations);
 		while (fgets(line, 50, input))
 		{
 			word = strtok(line, " ");
 			if (!strcmp(word, "NOT"))
 			{
+				// "NOT a -> c"
 				in1 = strtok(NULL, " ");
 				word = strtok(NULL, " ");
 				out = strtok(NULL, "\n");
@@ -83,7 +87,7 @@ int main(int argc, char* argv[])
 				else
 				{
 					wires[i_o.outx][i_o.outy][0] = 
-						~wires[i_o.in1x][i_o.in1y][0];
+					    ~wires[i_o.in1x][i_o.in1y][0];
 					wires[i_o.outx][i_o.outy][1] = 1;
 				}
 			}
@@ -94,6 +98,7 @@ int main(int argc, char* argv[])
 
 				if (!strcmp(word, "AND"))
 				{
+					// "a AND b -> c"
 					in2 = strtok(NULL, " ");
 					word = strtok(NULL, " ");
 					out = strtok(NULL, "\n");
@@ -106,14 +111,15 @@ int main(int argc, char* argv[])
 					}
 					else
 					{
-						wires[i_o.outx][i_o.outy][0] = 
-							wires[i_o.in1x][i_o.in1y][0] &
-							wires[i_o.in2x][i_o.in2y][0];
-						wires[i_o.outx][i_o.outy][1] = 1;
+					    wires[i_o.outx][i_o.outy][0] = 
+					      wires[i_o.in1x][i_o.in1y][0] &
+					      wires[i_o.in2x][i_o.in2y][0];
+					    wires[i_o.outx][i_o.outy][1] = 1;
 					}
 				}
 				else if (!strcmp(word, "OR"))
 				{
+					// "a OR b -> c"
 					in2 = strtok(NULL, " ");
 					word = strtok(NULL, " ");
 					out = strtok(NULL, "\n");
@@ -126,14 +132,15 @@ int main(int argc, char* argv[])
 					}
 					else
 					{
-						wires[i_o.outx][i_o.outy][0] = 
-							wires[i_o.in1x][i_o.in1y][0] |
-							wires[i_o.in2x][i_o.in2y][0];
-						wires[i_o.outx][i_o.outy][1] = 1;
+					    wires[i_o.outx][i_o.outy][0] = 
+					      wires[i_o.in1x][i_o.in1y][0] |
+						wires[i_o.in2x][i_o.in2y][0];
+					    wires[i_o.outx][i_o.outy][1] = 1;
 					}
 				}
 				else if (!strcmp(word, "LSHIFT"))
 				{
+					// "a LSHIFT n -> c"
 					in_num = atoi(strtok(NULL, " "));
 					word = strtok(NULL, " ");
 					out = strtok(NULL, "\n");
@@ -146,13 +153,15 @@ int main(int argc, char* argv[])
 					}
 					else
 					{
-						wires[i_o.outx][i_o.outy][0] = 
-							wires[i_o.in1x][i_o.in1y][0] << in_num;
-						wires[i_o.outx][i_o.outy][1] = 1;
+					    wires[i_o.outx][i_o.outy][0] = 
+						wires[i_o.in1x][i_o.in1y][0]
+						    << in_num;
+					    wires[i_o.outx][i_o.outy][1] = 1;
 					}
 				}
 				else if (!strcmp(word, "RSHIFT"))
 				{
+					// "a RSHIFT n -> c"
 					in_num = atoi(strtok(NULL, " "));
 					word = strtok(NULL, " ");
 					out = strtok(NULL, "\n");
@@ -165,13 +174,15 @@ int main(int argc, char* argv[])
 					}
 					else
 					{
-						wires[i_o.outx][i_o.outy][0] =
-							wires[i_o.in1x][i_o.in1y][0] >> in_num;
-						wires[i_o.outx][i_o.outy][1] = 1;
+					    wires[i_o.outx][i_o.outy][0] =
+					        wires[i_o.in1x][i_o.in1y][0]
+						    >> in_num;
+					    wires[i_o.outx][i_o.outy][1] = 1;
 					}
 				}
 				else if (!strcmp(word, "->"))
 				{
+					// "a -> c"
 					out = strtok(NULL, "\n");
 
 					i_o = get_values(in1, NULL, out);
@@ -182,9 +193,9 @@ int main(int argc, char* argv[])
 					}
 					else
 					{
-						wires[i_o.outx][i_o.outy][0] = 
-							wires[i_o.in1x][i_o.in1y][0];
-						wires[i_o.outx][i_o.outy][1] = 1;
+					    wires[i_o.outx][i_o.outy][0] = 
+						wires[i_o.in1x][i_o.in1y][0];
+					    wires[i_o.outx][i_o.outy][1] = 1;
 					}
 				}
 				else
@@ -199,6 +210,7 @@ int main(int argc, char* argv[])
 				in1 = strtok(NULL, " ");
 				if (!strcmp(in1, "AND"))
 				{
+					// "n AND a -> c"
 					in2 = strtok(NULL, " ");
 					word = strtok(NULL, " ");
 					out = strtok(NULL, "\n");
@@ -211,13 +223,15 @@ int main(int argc, char* argv[])
 					}
 					else
 					{
-						wires[i_o.outx][i_o.outy][0] = 
-							in_num & wires[i_o.in2x][i_o.in2y][0];
-						wires[i_o.outx][i_o.outy][1] = 1;
+					    wires[i_o.outx][i_o.outy][0] = 
+						in_num & 
+						wires[i_o.in2x][i_o.in2y][0];
+					    wires[i_o.outx][i_o.outy][1] = 1;
 					}
 				}
 				else if (!strcmp(in1, "->"))
 				{
+					// "n -> c"
 					out = strtok(NULL, "\n");
 				
 					i_o = get_values(NULL, NULL, out);
@@ -228,8 +242,9 @@ int main(int argc, char* argv[])
 					}
 					else
 					{
-						wires[i_o.outx][i_o.outy][0] = in_num;
-						wires[i_o.outx][i_o.outy][1] = 1;
+					    wires[i_o.outx][i_o.outy][0] =
+						    in_num;
+					    wires[i_o.outx][i_o.outy][1] = 1;
 					}
 				}
 				else
@@ -254,6 +269,10 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
+
+/* converts ascii values of input characters to integers 
+ * relative to a = 1, returns a struct containting values
+ */
 VALUE_PASS get_values(char* in1, char* in2, char* out){
 	VALUE_PASS i_o;
 
@@ -284,12 +303,21 @@ VALUE_PASS get_values(char* in1, char* in2, char* out){
 	return i_o;
 }
 
+/* prints error on console along with line causing error
+ * (used for initial debugging - this is only semi-functional, as 
+ * strtok() sets a null character at the first space - as a result,
+ * this function only displays the identifier of the first input wire
+ */
 void line_err(char* line)
 {
 	printf("Invalid line: %s", line);
 	exit(4);
 }
 
+/* checks if the input wires which are set (i.e. will be used)
+ * in passed struct have values set in the wires array
+ * returns 0 if not, 1 if set
+ */
 int check_set(VALUE_PASS i_o, unsigned short wires[27][27][2])
 {
 	if (i_o.in1set && !i_o.in2set)

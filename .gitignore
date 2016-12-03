@@ -3,6 +3,7 @@
 !*.c
 !*.cpp
 !*.h
+!*.js
 !*.txt
 !.gitignore
 !README.md

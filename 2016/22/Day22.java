@@ -5,14 +5,18 @@ import java.io.*;
 
 public class Day22 {
     public static void main(String[] args) {
+		// count viable pairs
 		ServerList servers = new ServerList();
+		// solve part 2
 		ServerRoom otherServers = new ServerRoom();
     }
 }
 
+// used only in part 1
 class ServerList {
     List<Server> servers;
-    int viablePairs = 0; 
+    int viablePairs = 0;
+	String serverMap = "";
     
     public ServerList() {
 		servers = Collections.synchronizedList(new ArrayList<Server>());
@@ -55,6 +59,7 @@ class ServerList {
     }
 }
 
+// used only in part 2
 class ServerRoom {
     Server[][] servers = new Server[25][36];
     Location emptyServer;
@@ -67,9 +72,13 @@ class ServerRoom {
 		depth = 0;
 		goodData = new Location(24, 0);
 		readInput();
-		while (true) {
-			next();
-		}
+		// just draw and count - literally faster than any algorithm
+		// I could come up with
+		// answer was 244
+		drawMap();
+		// while (true) {
+		// 	next();
+		// }
     }
 
     public ServerRoom(Server[][] servers, Location emptyServer, Location goodData, int depth) {
@@ -108,6 +117,30 @@ class ServerRoom {
 			}
 		}
     }
+
+	private void drawMap() {
+		int x = 0, y = 0;
+		for (Server[] serverLine : servers ) {
+			x = 0;
+			for (Server server : serverLine) {
+				if (x == 0 && y == 0) {
+					System.out.print("T");
+				} else if (x == 35 && y == 0) {
+					System.out.print("G");
+				} else if (server.size > 100) {
+					System.out.print("#");
+				} else if (server.used == 0) {
+					System.out.print("_");
+				} else {
+					System.out.print(".");
+				}
+				System.out.print(" ");
+				++x;
+			}
+			System.out.println();
+		    ++y;
+		}
+	}
 
     private void generateChildren() {
 		children[0] = generateChild(-1, -1);

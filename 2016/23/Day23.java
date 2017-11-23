@@ -9,22 +9,28 @@ public class Day23 {
 		Computer computer = new Computer();
 		computer.readInput();
 		computer.run();
-		System.out.println(computer.registers.get("a"));
+		System.out.println(computer.getRegisterA());
 		System.exit(0);
 	}
 }
 
 class Computer {
-	public Map<String, Integer> registers = new HashMap<String, Integer>();
-	List<Instruction> instructions;
+	// switch to 12 for part 2 and wait...
+	private static final int registerAStart = 7;
+	private Map<String, Integer> registers = new HashMap<String, Integer>();
+	private List<Instruction> instructions;
 	
 	public Computer() {
 	    String[] regList = {"a", "b", "c", "d"};
 		for (String _reg : regList) {
 			registers.put(_reg, 0);
 		}
-		registers.put("a", 7);
+		registers.put("a", registerAStart);
 		instructions = Collections.synchronizedList(new ArrayList<Instruction>());
+	}
+
+	public int getRegisterA() {
+		return registers.get("a");
 	}
 
 	public void readInput() {
@@ -45,28 +51,7 @@ class Computer {
 
 	public void run() {
 		int currentLine = 0;
-		boolean shouldWait = false;
 		while (currentLine < instructions.size()) {
-			// if (currentLine > 17 && registers.get("a") < 0) {
-			// 	shouldWait = true;
-			// }
-			// System.out.println(currentLine);
-			// System.out.println(instructions.get(currentLine).command);
-			// System.out.println(instructions.get(currentLine).argument1);
-			// System.out.println(instructions.get(currentLine).argument2);
-			// System.out.println("a: " + registers.get("a").toString());
-			// System.out.println("b: " + registers.get("b").toString());
-			// System.out.println("c: " + registers.get("c").toString());
-			// System.out.println("d: " + registers.get("d").toString());
-			// System.out.println(instructions.get(8).command);
-			// System.out.println("-----");
-			// try {
-			// 	if (currentLine == 16) {
-			// 		System.in.read();
-			// 	}
-			// } catch (IOException err) {
-			// 	System.out.println("error");
-			// }
 			currentLine += executeInstruction(currentLine);
 		}
 	}
@@ -116,12 +101,9 @@ class Computer {
 			} else {
 				i = lineNumber + registers.get(argument1);
 			}
-			// System.out.println("i = " + Integer.toString(i));
-			// System.out.println(instructions.size());
 			if (i < 0 || i >= instructions.size()) {
 				return 1;
 			}
-			// System.out.println(instructions.get(i).command);
 			if (instructions.get(i).argument2 == null) {
 				if (instructions.get(i).command.equals("inc")) {
 					instructions.get(i).setCommand("dec");
@@ -135,12 +117,6 @@ class Computer {
 					instructions.get(i).setCommand("jnz");
 				}
 			}
-			// System.out.println(instructions.get(i).command);
-			// try {
-			// 	System.in.read();
-			// } catch (IOException err) {
-			// 	System.out.println("error");
-			// }
 			return 1;
 		default:
 			throw new Error("Bad command");
@@ -167,7 +143,6 @@ class Instruction {
 	}
 
 	public void setCommand(String newCommand) {
-		// System.out.println("Changing command from " + command + " to " + newCommand);
 		command = newCommand;
 	}
 }

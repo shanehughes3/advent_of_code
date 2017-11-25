@@ -2,6 +2,7 @@ import java.util.*;
 import java.io.*;
 import java.util.stream.*;
 import java.nio.file.*;
+import java.lang.Math.*;
 
 public class Day24 {
 	public static void main(String[] args) {
@@ -17,34 +18,19 @@ class Map {
 	int currentX;
 	int currentY;
 	int i = 0;
-	List<Location> lastRun;
-	List<Location> thisRun = new ArrayList<Location>();
-	boolean foundThisRun;
+	Target[] targets = new Target[8];
 	
 	public Map() {
 		populate();
 	}
 
 	public int start() {
-		foundThisRun = false;
-		int runs = 0;
-		thisRun.add(new Location(startX, startY, Location.startFound));
-		while (foundThisRun == false) {
-			++runs;
-			lastRun = new ArrayList<Location>(thisRun);
-			thisRun.clear();
-			for (Location loc : lastRun) {
-				generateChildren(loc);
-			}
-			System.out.println(runs);
-			lastRun.clear();
-		}
-		return runs;
+		calculateDistances();
+		return calculateBest();
 	}
 
 	private void populate() {
 		try (Stream<String> input = Files.lines(Paths.get("input.txt"))) {
-			int i = 0;
 			input.forEach((String line) -> {
 					pushToMap(line);
 				});
@@ -57,61 +43,127 @@ class Map {
 	private void pushToMap(String line) {
 		map[i] = line.toCharArray();
 		for (int j = 0; j < map[i].length; ++j) {
-			if (map[i][j] == '0') {
-				startX = i;
-				startY = j;
+			if (map[i][j] >= '0' && map[i][j] <= '7') {
+				targets[Character.getNumericValue(map[i][j])] = new Target(i, j);
 			}
 		}
 		++i;
 	}
 
-	private void generateChildren(Location loc) {
-		if (map[loc.x - 1][loc.y] != '#') {
-			generateChild(loc, loc.x - 1, loc.y);
-		}
-		if (map[loc.x + 1][loc.y] != '#') {
-			generateChild(loc, loc.x + 1, loc.y);
-		}
-		if (map[loc.x][loc.y - 1] != '#') {
-			generateChild(loc, loc.x, loc.y - 1);
-		}
-		if (map[loc.x][loc.y + 1] != '#') {
-			generateChild(loc, loc.x, loc.y + 1);
-		}
+	private void calculateDistances() {
+		for (int sourceNum = 0; sourceNum < 8; ++sourceNum) {
+			// calculate all distances
+			for (int targetNum = 1; targetNum < 8; ++targetNum) {
+				if (sourceNum == targetNum) {
+					continue;
+				}
+				targets[sourceNum].distances[targetNum] =
+					findShortestRoute(sourceNum, targetNum);
+			}
+		}		
 	}
 
-	private void generateChild(Location loc, int x, int y) {
-		char space = map[x][y];
-		if (space == '.' || space == '0') {
-			thisRun.add(new Location(x, y, loc.found.clone()));
-		} else {
-			boolean[] newFound = loc.found.clone();
-			newFound[Character.getNumericValue(space)] = true;
-			boolean allFound = true;
-			for (boolean target : newFound) {
-				if (!target) {
-					allFound = false;
-					break;
+	private int findShortestRoute(int source, int target) {
+		// System.out.println("Finding " + Integer.toString(source) + " to " +
+		// 				   Integer.toString(target));
+		int startX = targets[source].x;
+		int startY = targets[source].y;
+		int endX = targets[target].x;
+		int endY = targets[target].y;
+		int newX, newY;
+		boolean[][] closed = new boolean[43][180];
+		ArrayList<Point> open = new ArrayList<Point>();
+		int finalDistance = 0;
+		open.add(new Point(startX, startY, endX, endY, 0));
+		
+		while (finalDistance == 0) {
+			Point current = open.remove(open.size() - 1);
+			for (int i = 0; i < 4; ++i) {
+				if (i % 2 == 0) {
+					newX = current.x - i + 1;
+					newY = current.y;
+				} else {
+					newX = current.x;
+					newY = current.y - i + 2;
 				}
+				if (map[newX][newY] == '#' || closed[newX][newY] == true) {
+					continue;
+				}
+				if (newX == endX && newY == endY) {
+					finalDistance = current.distance + 1;
+				}
+				closed[newX][newY] = true;
+				open.add(new Point(newX, newY, endX, endY, current.distance + 1));
 			}
-			if (allFound) {
-				foundThisRun = true;
-			}
-			thisRun.add(new Location(x, y, newFound));
+			Collections.sort(open, (a, b) -> {
+					if (b.score - a.score == 0) {
+						return 0;
+					}
+					return (b.score - a.score) > 0 ? 1 : -1;
+				});
 		}
+		// System.out.println(finalDistance);
+		return finalDistance;
+	}
+
+	private int calculateBest() {
+		int best = Integer.MAX_VALUE;
+		boolean[] used = new boolean[8];
+		used[0] = true;
+		for (int i = 1; i < 8; ++i) {
+			boolean[] thisUsed = used.clone();
+			thisUsed[i] = true;
+			int option = addNextLeg(thisUsed, 1, targets[0].distances[i], i);
+			best = (option < best) ? option : best;
+		}
+		return best;
+	}
+
+	private int addNextLeg(boolean[] used, int depth, int current, int thisTarget) {
+		if (depth == 7) {
+			return current;
+		}
+		int best = Integer.MAX_VALUE;
+		for (int i = 1; i < 8; ++i) {
+			if (used[i] == true) {
+				continue;
+			}
+			boolean[] thisUsed = used.clone();
+			thisUsed[i] = true;
+			int option = addNextLeg(thisUsed, depth + 1, current +
+									targets[thisTarget].distances[i], i);
+			best = (option < best) ? option : best;
+		}
+		return best;
 	}
 }
 
-class Location {
-	public int x;
-	public int y;
-	public boolean[] found;
-	public static final boolean[] startFound =
-	{false, false, false, false, false, false, false};
+class Target {
+	int x;
+	int y;
+	int[] distances = new int[8];
 
-	public Location(int x, int y, boolean[] found) {
+	public Target(int x, int y) {
 		this.x = x;
 		this.y = y;
-		this.found = found;
+	}
+}
+
+class Point {
+	int x;
+	int y;
+	int distance;
+	int score;
+
+	public Point(int x, int y, int endX, int endY, int distance) {
+		this.x = x;
+		this.y = y;
+		this.distance = distance;
+		this.score = heuristic(endX, endY);
+	}
+	
+	private int heuristic(int endX, int endY) {
+		return (this.distance) +
+			Math.abs(this.x - endX) + Math.abs(this.y - endY);
 	}
 }

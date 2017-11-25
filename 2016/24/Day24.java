@@ -53,7 +53,7 @@ class Map {
 	private void calculateDistances() {
 		for (int sourceNum = 0; sourceNum < 8; ++sourceNum) {
 			// calculate all distances
-			for (int targetNum = 1; targetNum < 8; ++targetNum) {
+			for (int targetNum = 0; targetNum < 8; ++targetNum) {
 				if (sourceNum == targetNum) {
 					continue;
 				}
@@ -64,8 +64,6 @@ class Map {
 	}
 
 	private int findShortestRoute(int source, int target) {
-		// System.out.println("Finding " + Integer.toString(source) + " to " +
-		// 				   Integer.toString(target));
 		int startX = targets[source].x;
 		int startY = targets[source].y;
 		int endX = targets[target].x;
@@ -102,7 +100,6 @@ class Map {
 					return (b.score - a.score) > 0 ? 1 : -1;
 				});
 		}
-		// System.out.println(finalDistance);
 		return finalDistance;
 	}
 
@@ -121,7 +118,10 @@ class Map {
 
 	private int addNextLeg(boolean[] used, int depth, int current, int thisTarget) {
 		if (depth == 7) {
-			return current;
+			// for part 1:
+			// return current;
+			// for part 2:
+			return current + targets[thisTarget].distances[0];
 		}
 		int best = Integer.MAX_VALUE;
 		for (int i = 1; i < 8; ++i) {
@@ -163,7 +163,7 @@ class Point {
 	}
 	
 	private int heuristic(int endX, int endY) {
-		return (this.distance) +
+		return (this.distance * 2) +
 			Math.abs(this.x - endX) + Math.abs(this.y - endY);
 	}
 }

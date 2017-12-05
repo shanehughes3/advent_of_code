@@ -6,14 +6,25 @@ import java.util.stream.*;
 class Day4 {
     public static void main(String args[]) {
 	Passwords pw = new Passwords();
+	System.out.println(pw.getCountPart1());
+	System.out.println(pw.getCountPart2());
     }
 }
 
 class Passwords {
-    int count = 0;
+    int countPart1 = 0;
+    int countPart2 = 0;
     
     public Passwords() {
-	
+	readInput();
+    }
+
+    public int getCountPart1() {
+	return countPart1;
+    }
+
+    public int getCountPart2() {
+	return countPart2;
     }
 
     private void readInput() {
@@ -29,11 +40,29 @@ class Passwords {
 
     private void checkLine(String line) {
 	HashMap<String, Boolean> map = new HashMap<String, Boolean>();
+	HashMap<String, Boolean> sortedMap = new HashMap<String, Boolean>();
 	String[] elements = line.split(" ");
-	Boolean isValid = true;
+	Boolean isValidPart1 = true;
+	Boolean isValidPart2 = true;
 
-	elements.forEach((String elem) -> {
-
-	    });
+	for (String elem : elements) {
+	    if (map.containsKey(elem)) {
+		isValidPart1 = false;
+	    }
+	    char[] letters = elem.toCharArray();
+	    Arrays.sort(letters);
+	    String sorted = new String(letters);
+	    if (sortedMap.containsKey(sorted)) {
+		isValidPart2 = false;
+	    }
+	    map.put(elem, new Boolean(true));
+	    sortedMap.put(sorted, new Boolean(true));
+	}
+	if (isValidPart1) {
+	    ++countPart1;
+	}
+	if (isValidPart2) {
+	    ++countPart2;
+	}
     }
 }

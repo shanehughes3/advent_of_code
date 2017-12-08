@@ -53,7 +53,8 @@ class Part2Tree {
     HashMap<String, Integer> treeWeights = new HashMap<String, Integer>();
     private static final Pattern progPtrn = Pattern.compile("[a-z]{3,}");
     private static final Pattern weightPtrn =
-	Pattern.compile("^[a-z]{3,} \\((\\d+)\\)");
+	Pattern.compile("^([a-z]{3,}) \\((\\d+)\\)");
+    boolean shouldContinue;
     
     public Part2Tree() {
 	readInput();
@@ -66,10 +67,10 @@ class Part2Tree {
     }
 
     private void populateTrees() {
-	boolean shouldContinue = true;
+	shouldContinue = true;
 	while (shouldContinue) {
 	    shouldContinue = false;
-	    for (String line : input) {
+	    input.forEach((line) -> {
 		Integer totalWeight = new Integer(0);
 		Matcher matcher = progPtrn.matcher(line);
 		matcher.find();
@@ -88,7 +89,7 @@ class Part2Tree {
 		    totalWeight += treeWeights.get(next);
 		} while(matcher.find());
 		treeWeights.put(base, totalWeight);
-	    }
+		});
 	}
     }
 
@@ -102,16 +103,19 @@ class Part2Tree {
 		    progsList.add(matcher.group());
 		}
 		String[] progs = progsList.toArray(new String[0]);
+		if (progs.length == 0) {
+		    return;
+		}
 		Arrays.sort(progs, (String a, String b) -> {
 			return treeWeights.get(a) - treeWeights.get(b);
 		    });
-		if (treeWeights.get(progs[0]) !=
-		    treeWeights.get(progs[progs.length - 1])) {
+		if (!treeWeights.get(progs[0])
+		    .equals(treeWeights.get(progs[progs.length - 1]))) {
 		    printUnbalanced(progs, base);
 		} else {
 		    for (int i = 0; i < progs.length; ++i) {
-			if (treeWeights.get(progs[0]) !=
-			    treeWeights.get(progs[i])) {
+			if (!treeWeights.get(progs[0])
+			    .equals(treeWeights.get(progs[i]))) {
 				printUnbalanced(progs, base);
 			    }
 		    }
@@ -120,7 +124,7 @@ class Part2Tree {
     }
 
     private void printUnbalanced(String[] progs, String base) {
-	System.out.printf("Base: %s: %d\n", base, initialWeights.get(base));
+	System.out.printf("\nBase: %s: %d\n", base, initialWeights.get(base));
 	for (String prog : progs) {
 	    System.out.printf("%d: %d\n", initialWeights.get(prog), treeWeights.get(prog));
 	}
@@ -141,8 +145,8 @@ class Part2Tree {
 	input.forEach((String line) -> {
 		Matcher matcher = weightPtrn.matcher(line);
 		matcher.find();
-		initialWeights.put(matcher.group(),
-				   new Integer(matcher.group(1)));
+		initialWeights.put(matcher.group(1),
+				   new Integer(matcher.group(2)));
 	    });
     }
 }

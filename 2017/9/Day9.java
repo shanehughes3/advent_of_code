@@ -3,7 +3,7 @@ import java.nio.file.*;
 import java.io.*;
 import java.util.regex.*;
 
-class Day8 {
+class Day9 {
     public static void main(String[] args) {
 	CharStream strm = new CharStream();
 	System.out.printf("Garbage: %d\n", strm.clean());

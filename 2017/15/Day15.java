@@ -17,6 +17,7 @@ class Generators {
     long factorA = 16807;
     long factorB = 48271;
     long div = 2147483647;
+    static final long mask = 0xffff;
 
     public Generators() {
 	genA = startA;
@@ -24,7 +25,6 @@ class Generators {
     }
 
     public int countTicks(int ticks, boolean isPicky) {
-	long mask = 0xffff;
 	int count = 0;
 	for (int i = 0; i < ticks; ++i) {
 	    getNextTick(isPicky);
@@ -42,10 +42,10 @@ class Generators {
 	} else {
 	    do {
 		genA = (genA * factorA) % div;
-	    } while (genA % 4 != 0);
+	    } while ((genA & 3) != 0);
 	    do {
 		genB = (genB * factorB) % div;
-	    } while (genB % 8 != 0);
+	    } while ((genB & 7) != 0);
 	}
     }
 }

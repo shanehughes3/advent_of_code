@@ -3,9 +3,9 @@ use strict; use warnings;
 my $nplayers = 493;
 my $lastmarble = 71863;
 
-my @circle = (0);
+my @circle = (0, 1);
 my @players;
-my $current = 0;
+my $current = 1;
 my $currentplayer = 0;
 my @queue;
 
@@ -24,21 +24,19 @@ sub parse_queue {
     my @out;
     while ($i < @circle + @queue) {
 	if ($queue[$qi] && $i == $queue[$qi]->[0]) {
-	    $out[$i++] = $queue[$qi++]->[1];
+	    push(@out, $queue[$qi++]->[1]);
 	} else {
-	    $out[$i++] = $circle[$ci++];
+	    push(@out, $circle[$ci++]);
 	}
+	++$i;
     }
     @queue = ();
-    if (@circle < 100) {
-	print join ',', @circle;
-	print "\n";
-    }
     @circle = @out;
 }
 
-for my $next (1 .. $lastmarble * 100) {
+for my $next (2 .. $lastmarble * 100) {
     if ($next % 23 == 0) {
+	$current += @queue;
 	parse_queue();
 	$players[$currentplayer] += $next;
 	my $removedi = ($current + @circle - 7) % @circle;
@@ -48,12 +46,12 @@ for my $next (1 .. $lastmarble * 100) {
     } else {
 	my $nextpos = $current + 2;
 	if ($nextpos > @circle) {
+	    $nextpos += @queue;
 	    parse_queue();
 	    $nextpos = $nextpos % @circle;
 	}
 	my @tmp = ($nextpos + @queue, $next);
 	$queue[@queue] = \@tmp;
-#	splice(@circle, $nextpos, 0, $next);
 	$current = $nextpos - 1;
     }
     $currentplayer = ++$currentplayer % $nplayers;
